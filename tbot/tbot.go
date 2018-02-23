@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/alexey-s-aksenov/saveusers"
+	"github.com/alexey-s-aksenov/schedule"
 	"github.com/alexey-s-aksenov/weather"
 
 	"github.com/alexey-s-aksenov/deluge"
@@ -35,6 +37,9 @@ type tbotConfig struct {
 	Weather struct {
 		Key string `yaml:"key"`
 	}
+	Users struct {
+		File string `yaml:"file"`
+	}
 }
 
 var myKeyboard = tgbotapi.NewReplyKeyboard(
@@ -59,6 +64,8 @@ var newUserKeyb = tgbotapi.NewReplyKeyboard(
 )
 
 var userAllowed = make(map[string]string)
+var regUsers = make(map[string]int64)
+var userConf saveusers.EncConfig
 
 func init() {
 	file, err := os.Open("config.yaml")
@@ -75,6 +82,15 @@ func init() {
 	}
 	log.Printf("Printing config:\nAdmin: %s", config.Bot.Admin)
 	userAllowed[config.Bot.Admin] = "all"
+
+	userConf.File = config.Users.File
+	users, err := userConf.Load()
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	regUsers = *users
 }
 
 func main() {
@@ -85,14 +101,20 @@ func main() {
 	}
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	regUsers := make(map[string]int64)
-
 	// u - структура с конфигом для получения апдейтов
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
 	// используя конфиг u создаем канал в который будут прилетать новые сообщения
 	updates, err := bot.GetUpdatesChan(u)
+
+	userChange := make(chan *map[string]int64)
+	go func() {
+		for {
+			m := <-userChange
+			userConf.Save(m)
+		}
+	}()
 
 	// в канал updates прилетают структуры типа Update
 	// вычитываем их и обрабатываем
@@ -119,11 +141,13 @@ func main() {
 			if update.Message.Text == "Подписка" {
 				reply = user + ", оформлена подписка на получение шуток каждые 2 часа"
 				regUsers[user] = update.Message.Chat.ID
+				userChange <- &regUsers
 			}
 
 			if update.Message.Text == "Отменить подписку" {
 				reply = user + ", подписка отменена"
 				delete(regUsers, user)
+				userChange <- &regUsers
 			}
 			// In case the some file
 			if update.Message.Text == "" {
@@ -191,7 +215,18 @@ func main() {
 	}()
 
 	go func() {
+		timer := make(chan bool)
+		go func() {
+			time.Sleep(schedule.FirstStart(10))
+			timer <- true
+
+		}()
+		go func() {
+			time.Sleep(schedule.FirstStart(17))
+			timer <- true
+		}()
 		for {
+			_ = <-timer
 			var wConfig weather.Weather
 			wConfig.Key = config.Weather.Key
 			response, err := weather.GetCurrentWeather(&wConfig)
@@ -201,7 +236,7 @@ func main() {
 				continue
 			}
 			message := "Cейчас: " + fmt.Sprintf("%.1f", response.Current.TempC) +
-				response.Current.Condition.Text +
+				" " + response.Current.Condition.Text +
 				"\nОщущается как: " +
 				fmt.Sprintf("%.1f", response.Current.FeelslikeC) +
 				"\nВлажность: " +
@@ -212,7 +247,10 @@ func main() {
 				msg := tgbotapi.NewMessage(regUsers[user], message)
 				bot.Send(msg)
 			}
-			time.Sleep(4 * time.Hour)
+			go func() {
+				time.Sleep(24 * time.Hour)
+				timer <- true
+			}()
 		}
 
 	}()
