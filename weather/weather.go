@@ -25,7 +25,7 @@ func GetCurrentWeather(conf *Weather) (*CurWeather, error) {
 	url := weatherProvider + "/" + currentContext + "?key=" + conf.Key + "&q=Moscow&lang=ru"
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Printf("Error in GetCurrentWeather func while calling API: %s", err)
+		log.Printf("weather.go: Error in GetCurrentWeather func while calling API: %s", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -35,7 +35,7 @@ func GetCurrentWeather(conf *Weather) (*CurWeather, error) {
 	var result CurWeather
 
 	if err := json.Unmarshal(body, &result); err != nil {
-		log.Printf("Error in GetCurrentWeather func while Unmarshalling: %s", err)
+		log.Printf("weather.go: Error in GetCurrentWeather func while Unmarshalling: %s", err)
 		return nil, err
 	}
 

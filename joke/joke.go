@@ -13,7 +13,7 @@ func GetJoke() (string, error) {
 	site := "http://nextjoke.net/Random"
 	resp, err := http.Get(site)
 	if err != nil {
-		log.Printf("Error in getJoke func: %s", err)
+		log.Printf("joke.go: Error in getJoke func: %s", err)
 		return "", err
 	}
 	defer resp.Body.Close()

@@ -22,6 +22,7 @@ func AddTorrent(data []byte, fileName string, config *Deluge) error {
 
 	d, err := deluge.New(url, config.Password)
 	if err != nil {
+		log.Printf("de;uge.go: Failed to connect to Deluge: ", err)
 		return err
 	}
 
@@ -36,10 +37,10 @@ func AddTorrent(data []byte, fileName string, config *Deluge) error {
 
 	id, err := d.CoreAddTorrentFile(fileName, buffer.String(), options)
 	if err != nil {
-		fmt.Println("Error adding torrent file :", err)
+		fmt.Println("deluge.go: Error adding torrent file :", err)
 	}
 
-	log.Printf("Added torrent with id: %s", id)
+	log.Printf("deluge.go: Added torrent with id: %s", id)
 
 	return nil
 

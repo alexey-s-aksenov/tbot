@@ -19,6 +19,7 @@ func encode(m *map[string]int64) (bytes.Buffer, error) {
 	enc := gob.NewEncoder(&buff)
 	err := enc.Encode(m)
 	if err != nil {
+		log.Printf("saveusers.go: Failed to encode: ", err)
 		return buff, err
 	}
 	return buff, nil

@@ -9,14 +9,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alexey-s-aksenov/saveusers"
-	"github.com/alexey-s-aksenov/schedule"
-	"github.com/alexey-s-aksenov/weather"
+	"tbot/saveusers"
+	"tbot/schedule"
+	"tbot/weather"
 
-	"github.com/alexey-s-aksenov/deluge"
-	"github.com/alexey-s-aksenov/joke"
+	"tbot/deluge"
+	"tbot/joke"
+
 	"gopkg.in/telegram-bot-api.v4"
 	"gopkg.in/yaml.v2"
+
+	"net/url"
 )
 
 var config tbotConfig
@@ -39,6 +42,11 @@ type tbotConfig struct {
 	}
 	Users struct {
 		File string `yaml:"file"`
+	}
+	Proxy struct {
+		ProxyURL string `yaml:"proxy"`
+		User     string `yaml:"user"`
+		Password string `yaml:"password"`
 	}
 }
 
@@ -94,7 +102,22 @@ func init() {
 }
 
 func main() {
-	bot, err := tgbotapi.NewBotAPI(config.Bot.Uuid)
+	// Create Client to connect via Proxy
+
+	proxyURL := url.URL{
+		Scheme: "socks5",
+		User:   url.UserPassword(config.Proxy.User, config.Proxy.Password),
+		Host:   config.Proxy.ProxyURL}
+
+	transport := &http.Transport{
+		Proxy: http.ProxyURL(&proxyURL),
+		//TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: transport}
+
+	//bot, err := tgbotapi.NewBotAPI(config.Bot.Uuid)
+	bot, err := tgbotapi.NewBotAPIWithClient(config.Bot.Uuid, client)
 
 	if err != nil {
 		log.Panic(err)
