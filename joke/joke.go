@@ -1,4 +1,4 @@
-package main
+package joke
 
 // package joke
 
@@ -20,9 +20,9 @@ import (
 	"github.com/djimenez/iconv-go"
 )
 
-func main() {
-	fmt.Println(GetJokeBash())
-}
+// func main() {
+// 	fmt.Println(GetJokeBash())
+// }
 
 type quote struct {
 	rating int64
