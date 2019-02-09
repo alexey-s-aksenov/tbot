@@ -16,7 +16,6 @@ import (
 	"tbot/deluge"
 	"tbot/joke"
 
-	"gopkg.in/telegram-bot-api.v4"
 	"gopkg.in/yaml.v2"
 
 	"net/url"
@@ -278,7 +277,7 @@ func main() {
 
 	}()
 	for {
-		message, err := joke.GetJoke()
+		message, err := joke.GetJokeBash()
 		if err != nil {
 			message = "Error while getting a joke. Sorry.."
 		}
