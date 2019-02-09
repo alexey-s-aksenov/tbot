@@ -16,6 +16,7 @@ import (
 	"tbot/deluge"
 	"tbot/joke"
 
+	tgbotapi "gopkg.in/telegram-bot-api.v4"
 	"gopkg.in/yaml.v2"
 
 	"net/url"
@@ -154,7 +155,7 @@ func main() {
 			log.Printf("[%s] %s", user, update.Message.Text)
 
 			if update.Message.Text == "Шутка" {
-				reply, err = joke.GetJoke()
+				reply, err = joke.GetJokeBash()
 				if err != nil {
 					reply = "Error while getting a joke. Sorry.."
 				}

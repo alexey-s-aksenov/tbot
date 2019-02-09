@@ -206,7 +206,7 @@ func nodeToString(doc *xhtml.Node) string {
 
 func getTheBest(q []*quote) string {
 	var result string
-	var found int64 = 0
+	var found int64
 	for _, qq := range q {
 		if qq.rating > found {
 			result = qq.text
