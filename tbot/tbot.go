@@ -9,12 +9,13 @@ import (
 	"strings"
 	"time"
 
-	"tbot/saveusers"
-	"tbot/schedule"
-	"tbot/weather"
+	"github.com/alexey-s-aksenov/tbot/schedule"
+	"github.com/alexey-s-aksenov/tbot/weather"
 
-	"tbot/deluge"
-	"tbot/joke"
+	"github.com/alexey-s-aksenov/tbot/saveusers"
+
+	"github.com/alexey-s-aksenov/tbot/deluge"
+	"github.com/alexey-s-aksenov/tbot/joke"
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 	"gopkg.in/yaml.v2"
@@ -26,7 +27,7 @@ var config tbotConfig
 
 type tbotConfig struct {
 	Bot struct {
-		Uuid  string `yaml:"uuid"`
+		UUID  string `yaml:"uuid"`
 		Admin string `yaml:"admin"`
 	}
 	Log struct {
@@ -116,8 +117,10 @@ func main() {
 
 	client := &http.Client{Transport: transport}
 
+	jokeGetter := joke.NewJokeGetter()
+
 	//bot, err := tgbotapi.NewBotAPI(config.Bot.Uuid)
-	bot, err := tgbotapi.NewBotAPIWithClient(config.Bot.Uuid, client)
+	bot, err := tgbotapi.NewBotAPIWithClient(config.Bot.UUID, client)
 
 	if err != nil {
 		log.Panic(err)
@@ -155,7 +158,7 @@ func main() {
 			log.Printf("[%s] %s", user, update.Message.Text)
 
 			if update.Message.Text == "Шутка" {
-				reply, err = joke.GetJokeBash()
+				reply, err = jokeGetter.GetJoke()
 				if err != nil {
 					reply = "Error while getting a joke. Sorry.."
 				}
@@ -278,7 +281,7 @@ func main() {
 
 	}()
 	for {
-		message, err := joke.GetJokeBash()
+		message, err := jokeGetter.GetJoke()
 		if err != nil {
 			message = "Error while getting a joke. Sorry.."
 		}
