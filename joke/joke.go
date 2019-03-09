@@ -70,7 +70,7 @@ func hashInDupps(h uint32) bool {
 	return false
 }
 
-func (liveGetWebRequest) FetchBytes(url string) ([]byte, error) {
+func (liveGetWebRequest) FetchBytes(site string) ([]byte, error) {
 	resp, err := http.Get(site)
 	if err != nil {
 		log.Printf("joke.go: Error in GetJokeBash func: %s", err)
@@ -92,7 +92,7 @@ func (liveGetWebRequest) FetchBytes(url string) ([]byte, error) {
 }
 
 // GetJokeBash получает html по ссылке и возвращает цитату с наивысшим рейтингом
-func (*bashorg) GetJoke() (string, error) {
+func (j *bashorg) GetJoke() (string, error) {
 	request := liveGetWebRequest{}
 	return innerGetJoke(request)
 }
