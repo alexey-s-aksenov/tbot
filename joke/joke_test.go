@@ -7,29 +7,6 @@ import (
 	xhtml "golang.org/x/net/html"
 )
 
-// func TestGetTheBest(t *testing.T) {
-// 	testArray := make([]*quote, 0)
-// 	for _, s := range []int{3, 5, 4, 2, 1} {
-// 		testArray = append(testArray, &quote{int64(s), strconv.Itoa(s)})
-// 	}
-// 	actual := getTheBest(testArray)
-// 	expected := "5"
-// 	if actual != expected {
-// 		t.Errorf("Wrong result. Expected: %v. Received: %v.\nTest array:\n%v", expected, actual, testArray)
-// 	}
-// }
-
-// func TestGetJoke(t *testing.T) {
-// 	// j := NewJokeGetter()
-// 	quote, err := NewJokeGetter().GetJoke()
-// 	if err != nil {
-// 		t.Error("Error: ", err)
-// 	} else {
-// 		t.Log("Resulting quote: ", quote)
-// 	}
-
-// }
-
 func TestExtractData(t *testing.T) {
 	const page = `<article class="quote" data-quote="397779">
 	<div class="quote__frame">
@@ -156,7 +133,7 @@ func (fakeGetWebRequest) FetchBytes(url string) ([]byte, error) {
 			<article class="quote" data-quote="405110">
 			  <div class="quote__frame">
 				<div class="quote__body">
-				  3<br>3<br>3
+					3<br>3<br>3
 				</div>
 				<footer class="quote__footer">
 	
@@ -169,7 +146,7 @@ func (fakeGetWebRequest) FetchBytes(url string) ([]byte, error) {
 			<article class="quote" data-quote="405110">
 			  <div class="quote__frame">
 				<div class="quote__body">
-				  4<br>4<br>4<br>4
+					4<br>4<br>4<br>4
 				</div>
 				<footer class="quote__footer">
 	
@@ -188,7 +165,7 @@ func (fakeGetWebRequest) FetchBytes(url string) ([]byte, error) {
 				  </div>
 				</header>
 				<div class="quote__body">
-				  5<br>5<br>5<br>5<br>5
+					5<br>5<br>5<br>5<br>5
 				</div>
 				<footer class="quote__footer">
 				  <div class="quote__vote">
@@ -237,8 +214,23 @@ func TestInnerGetJoke(t *testing.T) {
 4
 4
 4`
+	t.Log("Check on empty hash")
 	actual, _ := innerGetJoke(client)
-	if actual == expected {
+	if actual != expected {
 		t.Errorf("Wrong result. Want: %v, Got: %v", expected, actual)
+	}
+	expected2 := `5
+5
+5
+5
+5`
+	t.Log("Check with one value in hash")
+	actual2, _ := innerGetJoke(client)
+	if actual2 != expected2 {
+		t.Errorf("Wrong result. Want: %v, Got: %v", expected2, actual2)
+	}
+	t.Log("Check for hash overwhelming")
+	for i := 0; i < 20; i++ {
+		actual, _ = innerGetJoke(client)
 	}
 }

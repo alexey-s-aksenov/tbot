@@ -5,18 +5,16 @@ package joke
 import (
 	"bytes"
 	"errors"
+	"hash/fnv"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"regexp"
 	"sort"
 	"strconv"
 
 	xhtml "golang.org/x/net/html"
 )
-
-// func main() {
-// 	fmt.Println(GetJokeBash())
-// }
 
 type quote struct {
 	rating int64
@@ -31,6 +29,45 @@ type getWebRequest interface {
 }
 
 type liveGetWebRequest struct {
+}
+
+type duppsStore struct {
+	dupps   [20]uint32
+	current int
+}
+
+var fnvHash = fnv.New32a()
+
+var store = duppsStore{}
+
+func getHash(s string) uint32 {
+	fnvHash.Write([]byte(s))
+	defer fnvHash.Reset()
+	return fnvHash.Sum32()
+}
+
+func checkAndStoreDupps(s string) bool {
+	hash := getHash(s)
+	if hashInDupps(hash) {
+		return true
+	}
+	index := store.current
+	store.dupps[index] = hash
+	index = index + 1
+	if index > 19 {
+		index = 0
+	}
+	store.current = index
+	return false
+}
+
+func hashInDupps(h uint32) bool {
+	for _, v := range store.dupps {
+		if v == h {
+			return true
+		}
+	}
+	return false
 }
 
 func (liveGetWebRequest) FetchBytes(url string) ([]byte, error) {
@@ -103,9 +140,18 @@ func extractData(nn []*xhtml.Node) []*quote {
 				n.Data == "div" &&
 				checkAttr(n, "class", "quote__body") {
 				var quote string
+				re := regexp.MustCompile(`\r?\n`)
+				reT := regexp.MustCompile(`\t`)
 				for c := n.FirstChild; c != nil; c = c.NextSibling {
-					quote = quote + c.Data + "\n"
+					if c.Data == "br" {
+						quote = quote + "\n"
+					} else {
+						text := re.ReplaceAllString(c.Data, "")
+						text = reT.ReplaceAllString(text, "")
+						quote = quote + text
+					}
 				}
+				q.text = xhtml.UnescapeString(quote)
 			}
 			if n.Type == xhtml.ElementNode && n.Data == "div" && checkAttr(n, "class", "quote__total") {
 				q.rating, _ = strconv.ParseInt(n.FirstChild.Data, 10, 32)
@@ -133,7 +179,9 @@ func getQuotes(root *xhtml.Node) (string, error) {
 	sort.SliceStable(qq, func(i, j int) bool {
 		return qq[i].rating > qq[j].rating
 	})
-
+	if checkAndStoreDupps(qq[0].text) && len(qq) > 1 {
+		return qq[1].text, nil
+	}
 	return qq[0].text, nil
 }
 
