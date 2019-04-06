@@ -19,8 +19,6 @@ import (
 
 	tgbotapi "gopkg.in/telegram-bot-api.v4"
 	"gopkg.in/yaml.v2"
-
-	"net/url"
 )
 
 var config tbotConfig
@@ -105,22 +103,22 @@ func init() {
 func main() {
 	// Create Client to connect via Proxy
 
-	proxyURL := url.URL{
-		Scheme: "socks5",
-		User:   url.UserPassword(config.Proxy.User, config.Proxy.Password),
-		Host:   config.Proxy.ProxyURL}
+	// proxyURL := url.URL{
+	// 	Scheme: "socks5",
+	// 	User:   url.UserPassword(config.Proxy.User, config.Proxy.Password),
+	// 	Host:   config.Proxy.ProxyURL}
 
-	transport := &http.Transport{
-		Proxy: http.ProxyURL(&proxyURL),
-		//TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
+	// transport := &http.Transport{
+	// 	Proxy: http.ProxyURL(&proxyURL),
+	// 	//TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	// }
 
-	client := &http.Client{Transport: transport}
+	// client := &http.Client{Transport: transport}
 
 	jokeGetter := joke.NewJokeGetter()
 
-	//bot, err := tgbotapi.NewBotAPI(config.Bot.Uuid)
-	bot, err := tgbotapi.NewBotAPIWithClient(config.Bot.UUID, client)
+	bot, err := tgbotapi.NewBotAPI(config.Bot.UUID)
+	// bot, err := tgbotapi.NewBotAPIWithClient(config.Bot.UUID, client)
 
 	if err != nil {
 		log.Panic(err)
