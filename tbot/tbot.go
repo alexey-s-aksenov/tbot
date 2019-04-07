@@ -76,6 +76,14 @@ var regUsers = make(map[string]int64)
 var userConf saveusers.EncConfig
 
 func init() {
+
+	f, err := os.OpenFile("tbot.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	log.SetOutput(f)
+
 	file, err := os.Open("config.yaml")
 	if err != nil {
 		log.Panic(err)
@@ -102,6 +110,13 @@ func init() {
 }
 
 func main() {
+
+	f, err := os.OpenFile("tbot.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	log.SetOutput(f)
 
 	jokeGetter := joke.NewJokeGetter()
 
