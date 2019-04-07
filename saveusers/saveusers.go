@@ -3,6 +3,7 @@ package saveusers
 import (
 	"bytes"
 	"encoding/gob"
+	"errors"
 	"io/ioutil"
 	"log"
 	"os"
@@ -19,8 +20,7 @@ func encode(m *map[string]int64) (bytes.Buffer, error) {
 	enc := gob.NewEncoder(&buff)
 	err := enc.Encode(m)
 	if err != nil {
-		log.Printf("saveusers.go: Failed to encode: ", err)
-		return buff, err
+		return buff, errors.New("saveusers.go: Failed to encode: " + err.Error())
 	}
 	return buff, nil
 }
@@ -40,15 +40,14 @@ func decode(b *bytes.Buffer) (*map[string]int64, error) {
 func (c *EncConfig) Load() (*map[string]int64, error) {
 	m := make(map[string]int64)
 	if _, err := os.Stat(c.File); os.IsNotExist(err) {
-		log.Println("SAVEUSERS.Load: Nothing to load")
+		// No file, return empty list
 		return &m, nil
 	}
 	dat, err := ioutil.ReadFile(c.File)
 	if err != nil {
-		return &m, err
+		return &m, errors.New("saveusers.go: Failed to read file, error: " + err.Error())
 	}
 	buff := bytes.NewBuffer(dat)
-	log.Println("SAVEUSERS.Load: Loaded users")
 	return decode(buff)
 
 }
@@ -57,8 +56,7 @@ func (c *EncConfig) Load() (*map[string]int64, error) {
 func (c *EncConfig) Save(m *map[string]int64) error {
 	buff, err := encode(m)
 	if err != nil {
-		return err
+		return errors.New("saveusers.go: Failed to save file, error: " + err.Error())
 	}
-	log.Println("SAVEUSERS.Save: users saved")
 	return ioutil.WriteFile(c.File, buff.Bytes(), 0600)
 }

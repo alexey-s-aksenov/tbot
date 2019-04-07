@@ -1,9 +1,9 @@
 package joke
 
 import (
+	"errors"
 	"html"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -19,8 +19,7 @@ func (j *nextjoke) GetJoke() (string, error) {
 	site := "http://nextjoke.net/Random"
 	resp, err := http.Get(site)
 	if err != nil {
-		log.Printf("joke.go: Error in getJoke func: %s", err)
-		return "", err
+		return "", errors.New("joke.go: Error in getJoke: " + err.Error())
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)

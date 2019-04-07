@@ -3,8 +3,7 @@ package deluge
 import (
 	"bytes"
 	"encoding/base64"
-	"fmt"
-	"log"
+	"errors"
 
 	deluge "github.com/brunoga/go-deluge"
 )
@@ -22,8 +21,7 @@ func AddTorrent(data []byte, fileName string, config *Deluge) error {
 
 	d, err := deluge.New(url, config.Password)
 	if err != nil {
-		log.Printf("de;uge.go: Failed to connect to Deluge: ", err)
-		return err
+		return errors.New("deluge.go: Failed to connect to Deluge: " + err.Error())
 	}
 
 	var buffer bytes.Buffer
@@ -35,12 +33,10 @@ func AddTorrent(data []byte, fileName string, config *Deluge) error {
 		"add_paused": false,
 	}
 
-	id, err := d.CoreAddTorrentFile(fileName, buffer.String(), options)
+	_, err = d.CoreAddTorrentFile(fileName, buffer.String(), options)
 	if err != nil {
-		fmt.Println("deluge.go: Error adding torrent file :", err)
+		return errors.New("deluge.go: Error adding torrent file :" + err.Error())
 	}
-
-	log.Printf("deluge.go: Added torrent with id: %s", id)
 
 	return nil
 

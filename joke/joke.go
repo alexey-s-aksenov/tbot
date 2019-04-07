@@ -7,7 +7,6 @@ import (
 	"errors"
 	"hash/fnv"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"regexp"
 	"sort"
@@ -73,8 +72,7 @@ func hashInDupps(h uint32) bool {
 func (liveGetWebRequest) FetchBytes(site string) ([]byte, error) {
 	resp, err := http.Get(site)
 	if err != nil {
-		log.Printf("joke.go: Error in GetJokeBash func: %s", err)
-		return nil, err
+		return nil, errors.New("joke.go: Error in GetJokeBash func: " + err.Error())
 	}
 
 	defer resp.Body.Close()
@@ -84,8 +82,7 @@ func (liveGetWebRequest) FetchBytes(site string) ([]byte, error) {
 
 	buf, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("joke.go: Error reading from reader: %s", err)
-		return nil, err
+		return nil, errors.New("joke.go: Error reading from reader: " + err.Error())
 	}
 
 	return buf, nil
@@ -102,16 +99,14 @@ func innerGetJoke(request getWebRequest) (string, error) {
 
 	buf, err := request.FetchBytes(site)
 	if err != nil {
-		return "", err
+		return "", errors.New("joke.go: Failed to get data by URL: " + err.Error())
 	}
 	root, err := xhtml.Parse(bytes.NewReader(buf))
 
 	joke, err := getQuotes(root)
 	if err != nil {
-		log.Printf("joke.go: Error while parsing html: %s", err)
-		return "", nil
+		return "", errors.New("joke.go: Error while parsing html: " + err.Error())
 	}
-	// fmt.Println(quotes)
 	return joke, nil
 }
 
@@ -145,6 +140,8 @@ func extractData(nn []*xhtml.Node) []*quote {
 				for c := n.FirstChild; c != nil; c = c.NextSibling {
 					if c.Data == "br" {
 						quote = quote + "\n"
+					} else if c.Data == "div" {
+
 					} else {
 						text := re.ReplaceAllString(c.Data, "")
 						text = reT.ReplaceAllString(text, "")

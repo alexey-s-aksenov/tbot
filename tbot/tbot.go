@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -101,24 +102,28 @@ func init() {
 }
 
 func main() {
-	// Create Client to connect via Proxy
-
-	// proxyURL := url.URL{
-	// 	Scheme: "socks5",
-	// 	User:   url.UserPassword(config.Proxy.User, config.Proxy.Password),
-	// 	Host:   config.Proxy.ProxyURL}
-
-	// transport := &http.Transport{
-	// 	Proxy: http.ProxyURL(&proxyURL),
-	// 	//TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	// }
-
-	// client := &http.Client{Transport: transport}
 
 	jokeGetter := joke.NewJokeGetter()
 
 	bot, err := tgbotapi.NewBotAPI(config.Bot.UUID)
-	// bot, err := tgbotapi.NewBotAPIWithClient(config.Bot.UUID, client)
+
+	if config.Proxy.ProxyURL != "" {
+		// Create Client to connect via Proxy
+		log.Println("Using proxy to connect")
+
+		proxyURL := url.URL{
+			Scheme: "socks5",
+			User:   url.UserPassword(config.Proxy.User, config.Proxy.Password),
+			Host:   config.Proxy.ProxyURL}
+
+		transport := &http.Transport{
+			Proxy: http.ProxyURL(&proxyURL),
+			//TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+
+		client := &http.Client{Transport: transport}
+		bot, err = tgbotapi.NewBotAPIWithClient(config.Bot.UUID, client)
+	}
 
 	if err != nil {
 		log.Panic(err)
@@ -238,16 +243,17 @@ func main() {
 		}
 	}()
 
+	// Рассылка погоды
 	go func() {
-		timer := make(chan bool)
+		timer := make(chan struct{})
 		go func() {
 			time.Sleep(schedule.FirstStart(10))
-			timer <- true
+			timer <- struct{}{}
 
 		}()
 		go func() {
 			time.Sleep(schedule.FirstStart(17))
-			timer <- true
+			timer <- struct{}{}
 		}()
 		for {
 			_ = <-timer
@@ -273,11 +279,13 @@ func main() {
 			}
 			go func() {
 				time.Sleep(24 * time.Hour)
-				timer <- true
+				timer <- struct{}{}
 			}()
 		}
 
 	}()
+
+	// Рассылка шуток
 	for {
 		message, err := jokeGetter.GetJoke()
 		if err != nil {

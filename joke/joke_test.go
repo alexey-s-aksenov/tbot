@@ -24,8 +24,19 @@ func TestExtractData(t *testing.T) {
 		<br>Shenter<br>ты же не какой-нибудь дизайнер
 		<br>
 		<br>fool panda<br>=-O ]:-&gt;<br>
-		<br>08.07.2008 14:51:45, Shenter<br>э... Ты дизайнер что ли? :-[
-		<br>
+		<br>08.07.2008 14:51:45, Shenter<br>э... Ты дизайнер что ли? :-[		
+		<div class="quote__strips" data-debug="1">
+          <h3 class="quote__strips_title">
+            Комикс по мотивам цитаты
+          </h3>
+          <ul class="quote__strips_list">
+                          <li class="quote__strips_item">
+                <a href="/strip/20100104" class="quote__strips_link">
+                  <img src="/img/ts/lm5rujqz7uayvieo405422.jpg" class="quote__strips_img">
+                </a>
+              </li>
+                      </ul>
+        </div>
 	  </div>
 	  <footer class="quote__footer">
 		<div class="quote__button" role="button" aria-label="Это баян!" tabindex="0" data-vote="[397779, 2, 0]"
