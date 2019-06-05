@@ -5,6 +5,7 @@ package joke
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"hash/fnv"
 	"io/ioutil"
 	"net/http"
@@ -17,6 +18,7 @@ import (
 
 type quote struct {
 	rating int64
+	date   string
 	text   string
 }
 
@@ -179,7 +181,7 @@ func getQuotes(root *xhtml.Node) (string, error) {
 	if checkAndStoreDupps(qq[0].text) && len(qq) > 1 {
 		return qq[1].text, nil
 	}
-	return qq[0].text, nil
+	return formatQuote(qq[0]), nil
 }
 
 func checkAttr(n *xhtml.Node, att string, val string) bool {
@@ -189,6 +191,10 @@ func checkAttr(n *xhtml.Node, att string, val string) bool {
 		}
 	}
 	return false
+}
+
+func formatQuote(q *quote) string {
+	return fmt.Sprintf("%d\n%s", q.rating, q.text)
 }
 
 // func nodeToString(doc *xhtml.Node) string {

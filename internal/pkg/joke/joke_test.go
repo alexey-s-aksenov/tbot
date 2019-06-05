@@ -245,3 +245,13 @@ func TestInnerGetJoke(t *testing.T) {
 		actual, _ = innerGetJoke(client)
 	}
 }
+
+func TestFormatQuote(t *testing.T) {
+	expected := `123
+quote`
+	quote := &quote{123, "date", "quote"}
+	actual := formatQuote(quote)
+	if actual != expected {
+		t.Errorf("Wrong result. Want: %v, Got: %v", expected, actual)
+	}
+}
