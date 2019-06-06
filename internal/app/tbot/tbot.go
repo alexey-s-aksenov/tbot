@@ -3,7 +3,6 @@ package tbot
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -49,7 +48,7 @@ func CreateBot() {
 	// 2. load config
 	config, err := readConfig()
 	if err != nil {
-		logger.logPanic("failed to load bot configuration", err)
+		logger.Panic("failed to load bot configuration", err)
 	}
 
 	// 3. load registered users and setup goroutin to track new users
@@ -59,7 +58,7 @@ func CreateBot() {
 	regUsers := *users
 
 	if err != nil {
-		logger.logPanic("failed to load registered users", err)
+		logger.Panic("failed to load registered users", err)
 	}
 
 	userChange := make(chan *map[string]int64)
@@ -82,7 +81,7 @@ func CreateBot() {
 
 	if config.Proxy.ProxyURL != "" {
 		// Create Client to connect via Proxy
-		log.Println("Using proxy to connect")
+		logger.Info("Using proxy to connect")
 
 		proxyURL := url.URL{
 			Scheme: "socks5",
@@ -99,9 +98,9 @@ func CreateBot() {
 	}
 
 	if err != nil {
-		logger.logPanic("failed to connect to Telegram", err)
+		logger.Panic("failed to connect to Telegram", err)
 	}
-	logger.logInfo(fmt.Sprintf("Authorized on account %s", bot.Self.UserName))
+	logger.Info(fmt.Sprintf("Authorized on account %s", bot.Self.UserName))
 
 	// u - структура с конфигом для получения апдейтов
 	u := tgbotapi.NewUpdate(0)
@@ -123,7 +122,7 @@ func CreateBot() {
 			user := update.Message.From.UserName
 
 			// логируем от кого какое сообщение пришло
-			log.Printf("[%s] %s", user, update.Message.Text)
+			logger.Info(fmt.Sprintf("[%s] %s", user, update.Message.Text))
 
 			if update.Message.Text == "Шутка" {
 				reply, err = jokeGetter.GetJoke()
@@ -162,19 +161,19 @@ func CreateBot() {
 
 						url, err := bot.GetFileDirectURL(fileID)
 						if err != nil {
-							log.Printf("Failed to get file by fileID: " + fileID + " fileName: " + fileName)
+							logger.Error("Failed to get file by fileID: "+fileID+" fileName: "+fileName, err)
 						}
 
 						response, err := http.Get(url)
 						if err != nil {
-							log.Printf("Error while downloading %s - %s", url, err)
+							logger.Error("Error while downloading "+url, err)
 							continue
 						}
 						defer response.Body.Close()
 
 						data, err := ioutil.ReadAll(response.Body)
 						if err != nil {
-							log.Printf("Failed to get data from *Response.Body, err: %s", err)
+							logger.Error("Failed to get data from *Response.Body, err: %s", err)
 						}
 						var delugeConfig deluge.Deluge
 						delugeConfig.Host = config.Deluge.Host
@@ -226,7 +225,7 @@ func CreateBot() {
 			wConfig.Key = config.Weather.Key
 			response, err := weather.GetCurrentWeather(&wConfig)
 			if err != nil {
-				log.Printf("Error while getting weather %s", err)
+				logger.Error("Error while getting weather", err)
 				time.Sleep(4 * time.Hour)
 				continue
 			}
@@ -254,6 +253,7 @@ func CreateBot() {
 	for {
 		message, err := jokeGetter.GetJoke()
 		if err != nil {
+			logger.Error("Error on getting joke", err)
 			message = "Error while getting a joke. Sorry.."
 		}
 		for user := range regUsers {

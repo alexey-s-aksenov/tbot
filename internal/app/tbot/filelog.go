@@ -20,14 +20,14 @@ func newFileLogger() logger {
 
 }
 
-func (l *flog) logInfo(mes string) {
+func (l *flog) Info(mes string) {
 	l.Println("Info: " + mes)
 }
 
-func (l *flog) logError(mes string, err error) {
+func (l *flog) Error(mes string, err error) {
 	l.Println("Error: "+mes, err)
 }
 
-func (l *flog) logPanic(mes string, err error) {
+func (l *flog) Panic(mes string, err error) {
 	l.Panicln("Panic: "+mes, err)
 }

@@ -155,7 +155,13 @@ func (fakeGetWebRequest) FetchBytes(url string) ([]byte, error) {
 			  </div>
 			</article>
 			<article class="quote" data-quote="405110">
-			  <div class="quote__frame">
+				<div class="quote__frame">
+				<header class="quote__header">
+				  <a class="quote__header_permalink" href="/quote/418738">#418738</a>
+				  <div class="quote__header_date">
+					04.09.2012 в 9:45
+				  </div>
+				</header>
 				<div class="quote__body">
 					4<br>4<br>4<br>4
 				</div>
@@ -221,7 +227,9 @@ func (fakeGetWebRequest) FetchBytes(url string) ([]byte, error) {
 
 func TestInnerGetJoke(t *testing.T) {
 	client := fakeGetWebRequest{}
-	expected := `4
+	expected := `04.09.2012        4444
+-----
+4
 4
 4
 4`
@@ -230,7 +238,9 @@ func TestInnerGetJoke(t *testing.T) {
 	if actual != expected {
 		t.Errorf("Wrong result. Want: %v, Got: %v", expected, actual)
 	}
-	expected2 := `5
+	expected2 := `04.09.2012        555
+-----
+5
 5
 5
 5
@@ -247,7 +257,8 @@ func TestInnerGetJoke(t *testing.T) {
 }
 
 func TestFormatQuote(t *testing.T) {
-	expected := `123
+	expected := `date        123
+-----
 quote`
 	quote := &quote{123, "date", "quote"}
 	actual := formatQuote(quote)

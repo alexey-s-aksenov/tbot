@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 
 	xhtml "golang.org/x/net/html"
 )
@@ -133,6 +134,13 @@ func extractData(nn []*xhtml.Node) []*quote {
 		var q = new(quote)
 		var f func(n *xhtml.Node)
 		f = func(n *xhtml.Node) {
+			// extruct quote date
+			if n.Type == xhtml.ElementNode &&
+				n.Data == "div" &&
+				checkAttr(n, "class", "quote__header_date") {
+				q.date = strings.TrimSpace(n.FirstChild.Data)[0:10]
+			}
+			// extruct quote
 			if n.Type == xhtml.ElementNode &&
 				n.Data == "div" &&
 				checkAttr(n, "class", "quote__body") {
@@ -152,6 +160,7 @@ func extractData(nn []*xhtml.Node) []*quote {
 				}
 				q.text = xhtml.UnescapeString(quote)
 			}
+			//extruct rating
 			if n.Type == xhtml.ElementNode && n.Data == "div" && checkAttr(n, "class", "quote__total") {
 				q.rating, _ = strconv.ParseInt(n.FirstChild.Data, 10, 32)
 			}
@@ -179,7 +188,7 @@ func getQuotes(root *xhtml.Node) (string, error) {
 		return qq[i].rating > qq[j].rating
 	})
 	if checkAndStoreDupps(qq[0].text) && len(qq) > 1 {
-		return qq[1].text, nil
+		return formatQuote(qq[1]), nil
 	}
 	return formatQuote(qq[0]), nil
 }
@@ -194,7 +203,7 @@ func checkAttr(n *xhtml.Node, att string, val string) bool {
 }
 
 func formatQuote(q *quote) string {
-	return fmt.Sprintf("%d\n%s", q.rating, q.text)
+	return fmt.Sprintf("%s        %d\n-----\n%s", q.date, q.rating, strings.TrimSpace(q.text))
 }
 
 // func nodeToString(doc *xhtml.Node) string {
